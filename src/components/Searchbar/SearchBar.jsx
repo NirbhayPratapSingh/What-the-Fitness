@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./SearchBar.module.css";
 import { BsSearch } from "react-icons/bs";
 import { MdLocationOn } from "react-icons/md";
-const SearchBar = () => {
+const SearchBar = (getGeoLoc) => {
 	return (
 		<div className={styles.searchBar_Container}>
 			{/* iconDiv */}
@@ -22,6 +22,7 @@ const SearchBar = () => {
 				<MdLocationOn
 					size={"2em"}
 					color={"white"}
+					onClick={()=>getGeoLoc.data()}
 				/>
 			</div>
 			<div className={styles.clearDiv}>Clear</div>
