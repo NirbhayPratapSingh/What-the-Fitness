@@ -1,7 +1,7 @@
 const userDetails = require('../models/userSchema')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs')
-
+const { v4: uuidv4 } = require('uuid');
 //SIGNUP
 
 // {
@@ -18,6 +18,12 @@ const userRegistration = async(req, res) => {
     if (!first_name || !email || !password || !role){
         return res.status(422).send("Please Add all fields")
     }
+    if(mobile.length!==10){
+        return res.send(400).json({message:"Mobile should be 10 characters long "})
+    }
+    if(password.length!==10){
+        return res.send(400).json({message:"Password should be 8 characters long "})
+    }
     userDetails.findOne({email}).then(async(savedUser)=>{
         if (savedUser) {
             return res.status(422).json({message:"User already exists with that email"})
@@ -27,10 +33,12 @@ const userRegistration = async(req, res) => {
             first_name,
             last_name,
             email,
-            uid: 123,
+            uid: uuidv4(),
             mobile,
             password: hashedpassword,
-            role
+            role,
+            status,
+            token:""
         })
         res.status(200).json({result, message:'User saved successfully'})
     }).catch(err => res.status(500).json({message:"User.findOne savedUser part error => ", err} ))
@@ -52,12 +60,12 @@ const userLogin = async(req, res) => {
     userDetails.findOne({email}).then(async(validation)=>{
         const PasswordVarification = await bcrypt.compare(password,validation.password)
         if(PasswordVarification){
-            const token = jwt.sign({ id: validation._id, email:validation.email, role:validation.role }, "arshad", { expiresIn: "1h" });
+            const token = jwt.sign({ id: validation._id, email:validation.email, role:validation.role }, "nirbhay", { expiresIn: "30days" });
             const ResponseToFrontEnd = {token, email, role:validation.role}
             // localStorage.setItem("UserToken", JSON.stringify(ResponseToFrontEnd))
             
             // await userDetails.findOneAndUpdate({email},{token})
-            return res.status(200).json({ResponseToFrontEnd,message:"Account Verified"})
+            return res.status(200).json({token, data:validation ,status:200,message:"Logged in successfully"})
         }else{
             return res.status(422).json({message: "Verification Failed"})
         }           
